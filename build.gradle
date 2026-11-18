@@ -1,0 +1,117 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.1.2'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'ru.dimangan'
+version = ''
+description = 'EasyUI'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+    modules {
+        module('org.springframework.boot:spring-boot-starter-logging') {
+            replacedBy('org.springframework.boot:spring-boot-starter-log4j2', 'Use Log4j2 for application logging')
+        }
+    }
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-restclient'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-webclient'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation("org.springframework.boot:spring-boot-starter-validation:4.1.2")
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-restclient-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webclient-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webflux-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+
+    //Utils
+    compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'org.postgresql:postgresql'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    //Apache commons
+    implementation("commons-io:commons-io:2.22.0")
+    implementation("org.apache.commons:commons-lang3:3.21.0")
+
+    //JWT
+    implementation("io.jsonwebtoken:jjwt-api:0.13.0")
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
+
+    //Java secure channel
+    implementation("com.github.mwiede:jsch:2.28.8")
+
+    //Gson
+    implementation("com.google.code.gson:gson:2.15.0")
+
+    //QR
+    implementation 'com.google.zxing:core:3.5.3'
+    implementation 'com.google.zxing:javase:3.5.3'
+
+    //Test
+    testCompileOnly 'org.projectlombok:lombok'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+def frontendDirectory = layout.projectDirectory.dir('frontend')
+def frontendOutputDirectory = frontendDirectory.dir('dist/easy-ui-admin/browser')
+def generatedFrontendResources = layout.buildDirectory.dir('generated-resources/frontend')
+def npmExecutable = System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows') ? 'npm.cmd' : 'npm'
+
+tasks.register('frontendNpmInstall', Exec) {
+    group = 'build'
+    description = 'Installs the pinned Angular dependencies.'
+    workingDir frontendDirectory
+    commandLine npmExecutable, 'ci', '--cache', '.npm-cache', '--no-audit', '--no-fund'
+    inputs.files(frontendDirectory.file('package.json'), frontendDirectory.file('package-lock.json'))
+    outputs.dir(frontendDirectory.dir('node_modules'))
+}
+
+tasks.register('buildFrontend', Exec) {
+    group = 'build'
+    description = 'Builds the Angular admin console for production.'
+    dependsOn tasks.named('frontendNpmInstall')
+    workingDir frontendDirectory
+    commandLine npmExecutable, 'run', 'build'
+    inputs.dir(frontendDirectory.dir('src'))
+    inputs.files(frontendDirectory.file('angular.json'), frontendDirectory.file('tsconfig.app.json'), frontendDirectory.file('tsconfig.json'))
+    inputs.files(frontendDirectory.file('package.json'), frontendDirectory.file('package-lock.json'))
+    outputs.dir(frontendOutputDirectory)
+}
+
+tasks.register('copyFrontend', Sync) {
+    group = 'build'
+    description = 'Copies the Angular production assets into generated Spring resources.'
+    dependsOn tasks.named('buildFrontend')
+    from(frontendOutputDirectory)
+    into(generatedFrontendResources)
+}
+
+tasks.named('processResources') {
+    dependsOn tasks.named('copyFrontend')
+    from(generatedFrontendResources) {
+        into 'static'
+    }
+}

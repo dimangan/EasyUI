@@ -1,0 +1,100 @@
+<a routerLink="/users" class="back-link">← Все пользователи</a>
+<div class="page-heading">
+  <div>
+    <h1>Инбаунды пользователя</h1>
+    @if (assignments()) {
+      <p class="muted">{{ assignments()?.user?.name }}</p>
+    }
+  </div>
+  @if (assignments()) {
+    <button
+      type="button"
+      class="primary"
+      [disabled]="!dirty() || saving() || loading()"
+      (click)="save()"
+    >
+      {{ saving() ? 'Сохранение…' : 'Сохранить изменения' }}
+    </button>
+  }
+</div>
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+@if (message()) {
+  <p class="muted" role="status">{{ message() }}</p>
+}
+@if (loading()) {
+  <p class="muted" role="status">Загрузка…</p>
+} @else if (assignments(); as data) {
+  @if (data.unavailableServers.length) {
+    <p class="error" role="alert">
+      Результаты неполные. Недоступны серверы: {{ unavailableNames() }}.
+      <button type="button" class="secondary" (click)="retry()">Повторить загрузку</button>
+    </p>
+  }
+  @if (dirty()) {
+    <p class="muted" role="status">Есть несохранённые изменения.</p>
+  }
+  @if (!data.changes.length && !data.unavailableServers.length) {
+    <p class="empty">Нет доступных серверов с инбаундами.</p>
+  }
+  @for (group of data.changes; track group.server.id) {
+    <section class="assignment-group">
+      <h2>
+        <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#server" /></svg>
+        {{ group.server.name }}
+      </h2>
+      @if (!group.inbounds.length) {
+        <p class="empty">На этом сервере нет инбаундов.</p>
+      } @else {
+        <div
+          class="table-wrap"
+          tabindex="0"
+          role="region"
+          [attr.aria-label]="'Инбаунды сервера ' + group.server.name"
+        >
+          <table>
+            <thead>
+              <tr>
+                <th>Выбран</th>
+                <th>Название</th>
+                <th>Протокол</th>
+                <th>Транспорт</th>
+                <th>Порт</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (inbound of group.inbounds; track inbound.id) {
+                <tr>
+                  <td>
+                    <input
+                      type="checkbox"
+                      [checked]="inbound.newPeeked"
+                      [disabled]="saving()"
+                      [attr.aria-label]="
+                        'Выбрать ' +
+                        (inbound.remark || inbound.tag || inbound.id) +
+                        ', сервер ' +
+                        group.server.name
+                      "
+                      (change)="toggle(group.server.id, inbound, $any($event.target).checked)"
+                    />
+                  </td>
+                  <td>
+                    <strong>{{ inbound.remark || inbound.tag || inbound.id }}</strong>
+                    @if (inbound.remark && inbound.tag) {
+                      <div class="muted">{{ inbound.tag }}</div>
+                    }
+                  </td>
+                  <td>{{ inbound.protocol }}</td>
+                  <td>{{ inbound.network }}</td>
+                  <td>{{ inbound.port }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+}

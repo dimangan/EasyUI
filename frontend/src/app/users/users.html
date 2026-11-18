@@ -1,0 +1,113 @@
+<div class="page-heading">
+  <div>
+    <h1>Пользователи</h1>
+    <p class="muted">Подписки и настройки доступа пользователей.</p>
+  </div>
+  <div class="actions">
+    <button class="secondary" [disabled]="loading()" (click)="refresh()">
+      <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#refresh" /></svg>
+      Обновить
+    </button>
+    <button class="primary" (click)="openCreate()">
+      <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#plus" /></svg>
+      Добавить пользователя
+    </button>
+  </div>
+</div>
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+@if (loading()) {
+  <p class="muted" role="status">Загрузка пользователей…</p>
+} @else if (!users().length && !error()) {
+  <p class="empty">
+    <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#users" /></svg>
+    Пользователей пока нет. Добавьте первого пользователя.
+  </p>
+} @else if (users().length) {
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Список пользователей">
+    <table>
+      <thead>
+        <tr>
+          <th>Имя</th>
+          <th>Трафик</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of users(); track user.id) {
+          <tr>
+            <td>
+              <div class="user-identity">
+                <span class="user-avatar" aria-hidden="true">
+                  <svg class="icon"><use href="assets/icons.svg#user" /></svg>
+                </span>
+                <strong>{{ user.name }}</strong>
+              </div>
+            </td>
+            <td class="traffic">{{ user.totalTraffic }}</td>
+            <td>
+              <div class="actions">
+                <a [routerLink]="['/users', user.id, 'inbounds']">Инбаунды</a>
+                <button class="link-button" (click)="openSubscription(user)">Подписка</button>
+                <button class="link-button danger" [disabled]="busy()" (click)="remove(user)">
+                  Удалить
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <div class="table-footer">Всего пользователей: {{ users().length }}</div>
+  </div>
+}
+<dialog #createDialog aria-labelledby="user-dialog-title">
+  <form #form="ngForm" (ngSubmit)="create(form.valid)">
+    <h2 id="user-dialog-title">Добавить пользователя</h2>
+    <div class="form-grid">
+      <label class="wide">
+        Имя
+        <input name="name" required [(ngModel)]="name" autofocus />
+      </label>
+    </div>
+    @if (formError()) {
+      <p class="error" role="alert">{{ formError() }}</p>
+    }
+    <div class="dialog-actions">
+      <button type="button" class="secondary" (click)="closeCreate()">Отмена</button>
+      <button class="primary" type="submit" [disabled]="busy() || !form.valid || !name.trim()">
+        {{ busy() ? 'Сохранение…' : 'Добавить' }}
+      </button>
+    </div>
+  </form>
+</dialog>
+<dialog #subscriptionDialog (close)="clearSubscription()" aria-labelledby="subscription-title">
+  <h2 id="subscription-title">Подписка: {{ selectedName() }}</h2>
+  @if (linkLoading()) {
+    <p class="muted" role="status">Загрузка ссылки…</p>
+  } @else if (subscription(); as sub) {
+    <p class="muted">Ссылка для подключения</p>
+    <p class="subscription-url">{{ sub.link }}</p>
+    <div class="actions">
+      <button class="secondary" (click)="copy(sub.link)">
+        <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#copy" /></svg>
+        Копировать ссылку
+      </button>
+      <span role="status">{{ copyMessage() }}</span>
+    </div>
+    <img
+      (error)="subscription.set(null)"
+      class="subscription-qr"
+      [src]="'data:image/png;base64,' + sub.qr"
+      alt="QR-код ссылки подписки"
+    />
+  } @else {
+    <p class="error" role="alert">
+      Ссылка подписки недоступна. Проверьте настройки публичного адреса и повторите попытку.
+    </p>
+  }
+  <div class="dialog-actions">
+    <button class="secondary" (click)="subscriptionDialog.close()">Закрыть</button>
+  </div>
+</dialog>

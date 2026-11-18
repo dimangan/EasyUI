@@ -1,0 +1,104 @@
+.resource-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 140px;
+}
+.resource-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--link);
+}
+.server-address {
+  min-width: 150px;
+  font-variant-numeric: tabular-nums;
+}
+.server-address .muted {
+  display: block;
+  margin-top: 3px;
+}
+.server-credential {
+  min-width: 110px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.server-credential span {
+  display: block;
+}
+
+.server-credential .muted {
+  margin-top: 3px;
+}
+.setup-state {
+  min-width: 135px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.panel-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  font-size: 12px;
+  text-decoration: none;
+}
+.panel-link .icon {
+  width: 13px;
+  height: 13px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border: 1px solid var(--warning-border);
+  border-radius: 5px;
+  color: var(--warning);
+  background: var(--warning-soft);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.badge::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  flex: none;
+  border-radius: 50%;
+  background: currentColor;
+}
+.badge-success {
+  border-color: var(--success-border);
+  color: var(--success);
+  background: var(--success-soft);
+}
+.badge-danger {
+  border-color: var(--danger-border);
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+.badge-info {
+  border-color: var(--accent-border);
+  color: var(--link);
+  background: var(--accent-soft);
+}
+
+.check {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  margin-block: 22px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.check input {
+  margin: 0;
+}

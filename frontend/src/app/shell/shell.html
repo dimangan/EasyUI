@@ -1,0 +1,62 @@
+<aside class="sidebar">
+  <a class="brand" routerLink="/servers" aria-label="EasyUI — серверы">
+    <span class="brand-mark" aria-hidden="true">
+      <svg class="icon"><use href="assets/icons.svg#shield" /></svg>
+    </span>
+    <span>
+      <span class="brand-name">EasyUI</span>
+      <small>Панель управления</small>
+    </span>
+  </a>
+  <p class="nav-label">Управление</p>
+  <nav class="nav" aria-label="Основная навигация">
+    <a routerLink="/servers" routerLinkActive="active" ariaCurrentWhenActive="page">
+      <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#server" /></svg>
+      Серверы
+    </a>
+    <a routerLink="/users" routerLinkActive="active" ariaCurrentWhenActive="page">
+      <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#users" /></svg>
+      Пользователи
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#network" /></svg>
+    <span>
+      Серверы, подключения
+      <br />
+      и доступ пользователей
+    </span>
+  </div>
+</aside>
+
+<div class="workspace">
+  <header class="topbar">
+    <div class="workspace-label">
+      <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#grid" /></svg>
+      Панель управления
+    </div>
+    <details #account class="account">
+      <summary #accountSummary aria-label="Меню администратора">
+        <span class="avatar" aria-hidden="true">
+          <svg class="icon"><use href="assets/icons.svg#user" /></svg>
+        </span>
+        <span class="account-name">Администратор</span>
+        <svg class="icon icon-small" aria-hidden="true">
+          <use href="assets/icons.svg#chevron" />
+        </svg>
+      </summary>
+      <div class="account-menu">
+        <button type="button" (click)="account.open = false; credentials.open()">
+          <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#settings" /></svg>
+          Изменить логин и пароль
+        </button>
+        <button type="button" class="logout" (click)="logout()">
+          <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#logout" /></svg>
+          Выйти
+        </button>
+      </div>
+    </details>
+  </header>
+  <main class="content"><router-outlet /></main>
+</div>
+<app-credentials-dialog #credentials (closed)="accountSummary.focus()" />

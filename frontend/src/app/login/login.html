@@ -1,0 +1,76 @@
+<main class="login-page">
+  <aside class="login-intro" aria-label="EasyUI">
+    <div class="login-brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg class="icon"><use href="assets/icons.svg#shield" /></svg>
+      </span>
+      <span>EasyUI</span>
+    </div>
+    <div class="intro-content">
+      <div class="network-illustration" aria-hidden="true">
+        <div class="network-node network-node-main">
+          <svg class="icon"><use href="assets/icons.svg#shield" /></svg>
+        </div>
+        <div class="network-branch">
+          <span class="network-node">
+            <svg class="icon"><use href="assets/icons.svg#server" /></svg>
+          </span>
+          <span class="network-node">
+            <svg class="icon"><use href="assets/icons.svg#users" /></svg>
+          </span>
+          <span class="network-node">
+            <svg class="icon"><use href="assets/icons.svg#network" /></svg>
+          </span>
+        </div>
+      </div>
+      <h2>
+        Вся инфраструктура.
+        <br />
+        Одна панель управления.
+      </h2>
+      <p>Управляйте серверами, подключениями и доступом пользователей в одном месте.</p>
+    </div>
+    <p class="intro-footer">EasyUI · Консоль администрирования</p>
+  </aside>
+  <section class="login-panel" aria-labelledby="login-title">
+    <div class="login-form-heading">
+      <span class="login-lock" aria-hidden="true">
+        <svg class="icon"><use href="assets/icons.svg#shield" /></svg>
+      </span>
+      <h1 id="login-title">Добро пожаловать</h1>
+      <p class="muted">Войдите, чтобы продолжить работу с панелью.</p>
+    </div>
+    @if (auth.sessionExpired()) {
+      <p class="error" role="status">Сеанс истёк. Войдите снова.</p>
+    }
+    <form (ngSubmit)="submit()">
+      <label for="username">Имя пользователя</label>
+      <input
+        id="username"
+        name="username"
+        autocomplete="username"
+        required
+        [(ngModel)]="username"
+        placeholder="Введите логин"
+      />
+      <label for="password">Пароль</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        autocomplete="current-password"
+        required
+        [(ngModel)]="password"
+        placeholder="Введите пароль"
+      />
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+      <button class="primary" type="submit" [disabled]="pending() || !username || !password">
+        {{ pending() ? 'Вход…' : 'Войти в панель' }}
+        <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#arrow-right" /></svg>
+      </button>
+    </form>
+    <p class="login-note">Доступ для администратора</p>
+  </section>
+</main>

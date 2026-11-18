@@ -1,0 +1,131 @@
+<a routerLink="/servers" class="back-link">← Все серверы</a>
+<div class="page-heading">
+  <div>
+    <h1>Инбаунды</h1>
+    @if (server()) {
+      <p class="muted">{{ server()?.name }} · {{ server()?.host }}</p>
+    }
+  </div>
+  @if (available()) {
+    <button class="primary" (click)="open()">
+      <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#plus" /></svg>
+      Добавить инбаунд
+    </button>
+  }
+</div>
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+@if (loading()) {
+  <p class="muted" role="status">Загрузка…</p>
+} @else if (available() && !error()) {
+  @if (!inbounds().length) {
+    <p class="empty">
+      <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#network" /></svg>
+      Инбаундов пока нет.
+    </p>
+  } @else {
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Инбаунды сервера">
+      <table>
+        <thead>
+          <tr>
+            <th>Название</th>
+            <th>Протокол</th>
+            <th>Транспорт</th>
+            <th>Защита</th>
+            <th>Порт</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (inbound of inbounds(); track inbound.id) {
+            <tr>
+              <td>
+                <strong>{{ inbound.remark }}</strong>
+              </td>
+              <td>{{ inbound.protocol | uppercase }}</td>
+              <td>{{ inbound.network | uppercase }}</td>
+              <td>{{ inbound.security | uppercase }}</td>
+              <td>{{ inbound.port }}</td>
+              <td>
+                <button class="link-button danger" [disabled]="busy()" (click)="remove(inbound)">
+                  Удалить
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+}
+<dialog #dialog aria-labelledby="inbound-dialog-title">
+  <form #form="ngForm" (ngSubmit)="create(form.valid)">
+    <h2 id="inbound-dialog-title">Добавить инбаунд</h2>
+    <div class="form-grid">
+      <label>
+        Флаг
+        <select name="flag" required [(ngModel)]="flag">
+          <option value="" disabled>Выберите флаг</option>
+          @for (item of flags; track item.emoji) {
+            <option [value]="item.emoji">{{ item.emoji }} {{ item.name }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Название
+        <input name="name" required [(ngModel)]="name" />
+      </label>
+      <label>
+        Протокол
+        <select name="protocol" [(ngModel)]="protocol" (ngModelChange)="protocolChanged()">
+          <option value="VLESS">VLESS</option>
+          <option value="HYSTERIA">HYSTERIA</option>
+        </select>
+      </label>
+      <label>
+        Транспорт
+        <select name="transport" [(ngModel)]="transport">
+          @if (protocol === 'VLESS') {
+            <option value="TCP">TCP</option>
+            <option value="GRPC">GRPC</option>
+            <option value="XHTTP">XHTTP</option>
+          } @else {
+            <option value="UDP">UDP</option>
+          }
+        </select>
+      </label>
+      <label>
+        Защита
+        <select name="security" [(ngModel)]="security">
+          @if (protocol != 'HYSTERIA') {
+            <option value="NONE">Нет</option>
+            <option value="REALITY">REALITY</option>
+          }
+          <option value="TLS">TLS</option>
+        </select>
+      </label>
+      <label>
+        Порт (необязательно)
+        <input
+          name="port"
+          type="number"
+          min="1"
+          max="65535"
+          step="1"
+          [(ngModel)]="port"
+          placeholder="Автоматически"
+        />
+      </label>
+    </div>
+    @if (formError()) {
+      <p class="error" role="alert">{{ formError() }}</p>
+    }
+    <div class="dialog-actions">
+      <button type="button" class="secondary" (click)="close()">Отмена</button>
+      <button class="primary" [disabled]="busy() || !form.valid">
+        {{ busy() ? 'Сохранение…' : 'Добавить' }}
+      </button>
+    </div>
+  </form>
+</dialog>

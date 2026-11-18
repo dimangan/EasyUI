@@ -1,0 +1,28 @@
+.assignment-group {
+  margin-top: 28px;
+}
+.assignment-group h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 14px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.assignment-group h2 .icon {
+  color: var(--muted);
+}
+.assignment-group td:first-child {
+  width: 80px;
+  text-align: center;
+}
+.assignment-group th:first-child {
+  text-align: center;
+}
+.assignment-group tr:has(input:checked) {
+  background: var(--accent-soft);
+}
+input[type='checkbox'] {
+  margin: 0;
+  vertical-align: middle;
+}

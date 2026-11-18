@@ -1,0 +1,191 @@
+<div class="page-heading">
+  <div>
+    <h1>Серверы</h1>
+    <p class="muted">Подключения и состояние настройки серверов.</p>
+  </div>
+  <div class="actions">
+    <button class="secondary" [disabled]="loading()" (click)="refresh()">
+      <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#refresh" /></svg>
+      Обновить
+    </button>
+    <button class="primary" (click)="open()">
+      <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#plus" /></svg>
+      Добавить сервер
+    </button>
+  </div>
+</div>
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+@if (loading()) {
+  <p class="muted" role="status">Загрузка серверов…</p>
+} @else if (!servers().length && !error()) {
+  <p class="empty">
+    <svg class="icon" aria-hidden="true"><use href="assets/icons.svg#server" /></svg>
+    Серверов пока нет. Добавьте первый сервер.
+  </p>
+} @else if (servers().length) {
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Список серверов">
+    <table>
+      <thead>
+        <tr>
+          <th>Название</th>
+          <th>IP / домен</th>
+          <th>Доступ SSH</th>
+          <th>3X-UI</th>
+          <th>Статус</th>
+          <th>Настройка</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (server of servers(); track server.id) {
+          <tr>
+            <td>
+              <div class="resource-identity">
+                <span class="resource-icon" aria-hidden="true">
+                  <svg class="icon"><use href="assets/icons.svg#server" /></svg>
+                </span>
+                <strong>{{ server.name }}</strong>
+              </div>
+            </td>
+            <td class="server-address">
+              {{ server.host }}
+              <span class="muted">{{ server.domain }}</span>
+            </td>
+            <td class="server-credential">
+              <span>{{ server.username }}</span>
+              <span class="muted">{{ server.password }}</span>
+            </td>
+            <td>
+              @if (canOpen(server)) {
+                <a
+                  class="panel-link"
+                  href="{{
+                    'https://' + server.domain + ':' + server.xuiPort + '/' + server.xuiPath
+                  }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  3x-ui панель
+                  <svg class="icon" aria-hidden="true">
+                    <use href="assets/icons.svg#external" />
+                  </svg>
+                </a>
+              } @else {
+                <span class="disabled">3x-ui панель</span>
+              }
+            </td>
+            <td>
+              <span
+                class="badge"
+                [class.badge-success]="server.status === 'WORKING'"
+                [class.badge-danger]="server.status === 'SETUP_FAILED'"
+                [class.badge-info]="server.status === 'SETUP_IN_PROGRESS'"
+              >
+                {{ status(server.status) }}
+              </span>
+            </td>
+            <td class="setup-state">{{ setupState(server.setupState) }}</td>
+            <td>
+              <div class="actions">
+                @if (canOpen(server)) {
+                  <a [routerLink]="['/servers', server.id, 'inbounds']">Инбаунды</a>
+                } @else {
+                  <span class="disabled" title="Доступно после настройки и запуска сервера">
+                    Инбаунды
+                  </span>
+                }
+                <button
+                  class="link-button"
+                  [disabled]="
+                    busy() ||
+                    (server.status !== 'WAITING_FOR_SETUP' && server.status !== 'SETUP_FAILED')
+                  "
+                  (click)="setup(server)"
+                >
+                  Настроить
+                </button>
+                <button class="link-button danger" [disabled]="busy()" (click)="remove(server)">
+                  Удалить
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <div class="table-footer">Всего серверов: {{ servers().length }}</div>
+  </div>
+}
+<dialog
+  #dialog
+  (cancel)="clearSecrets()"
+  (close)="clearSecrets()"
+  aria-labelledby="server-dialog-title"
+>
+  <form #form="ngForm" (ngSubmit)="create(form.valid)">
+    <h2 id="server-dialog-title">Добавить сервер</h2>
+    <div class="form-grid">
+      <label>
+        Название
+        <input name="name" required [(ngModel)]="name" />
+      </label>
+      <label>
+        Пользователь SSH
+        <input name="username" required autocomplete="off" [(ngModel)]="username" />
+      </label>
+      <label>
+        Пароль SSH
+        <input
+          name="password"
+          type="password"
+          required
+          autocomplete="new-password"
+          [(ngModel)]="password"
+        />
+      </label>
+      <label>
+        IP-адрес
+        <input name="host" required [(ngModel)]="host" />
+      </label>
+      <label>
+        Порт SSH
+        <input name="port" type="number" min="1" max="65535" step="1" required [(ngModel)]="port" />
+      </label>
+      <label>
+        Домен
+        <input name="domain" required [(ngModel)]="domain" />
+      </label>
+    </div>
+    <label class="check">
+      <input type="checkbox" name="useKey" [(ngModel)]="useKey" />
+      Указать пару ключей
+    </label>
+    @if (useKey) {
+      <div class="form-grid">
+        <label class="wide">
+          Название ключа
+          <input name="keyName" required [(ngModel)]="keyName" />
+        </label>
+        <label class="wide">
+          Публичный ключ
+          <textarea name="publicKey" required [(ngModel)]="publicKey"></textarea>
+        </label>
+        <label class="wide">
+          Приватный ключ
+          <textarea name="privateKey" required [(ngModel)]="privateKey"></textarea>
+        </label>
+      </div>
+    }
+    @if (formError()) {
+      <p class="error" role="alert">{{ formError() }}</p>
+    }
+    <div class="dialog-actions">
+      <button type="button" class="secondary" (click)="close()">Отмена</button>
+      <button class="primary" type="submit" [disabled]="busy() || !form.valid">
+        {{ busy() ? 'Сохранение…' : 'Добавить' }}
+      </button>
+    </div>
+  </form>
+</dialog>

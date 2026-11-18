@@ -1,0 +1,31 @@
+.welcome {
+  display: grid;
+  align-content: center;
+  min-height: 100vh;
+  max-width: 44rem;
+  padding: clamp(2rem, 8vw, 6rem);
+}
+
+.welcome__product {
+  margin: 0 0 1rem;
+  color: var(--link);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+p:last-child {
+  max-width: 35rem;
+  margin: 1.25rem 0 0;
+  color: var(--muted);
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
