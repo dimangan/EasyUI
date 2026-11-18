@@ -2,3 +2,4 @@
 /install.sh text eol=lf
 *.bat text eol=crlf
 *.jar binary
+EasyUI.jar filter=lfs diff=lfs merge=lfs -text
